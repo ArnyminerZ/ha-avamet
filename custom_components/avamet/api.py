@@ -11,6 +11,7 @@ BASE_URL = "https://www.avamet.org"
 DATA_URL = f"{BASE_URL}/mxo_i.php?id={{station_id}}"
 
 # Regex patterns for parsing AVAMET HTML
+PATTERN_NAME = re.compile(r"<div id=\"estacio\"[^>]*>\s*(.*?)\s*<br><span class=\"subnom\">\s*(.*?)\s*</span>", re.DOTALL)
 PATTERN_TEMP = re.compile(r"<div id=\"temp_mit\">([\d,-]+)&deg;</div>")
 PATTERN_HUMIDITY = re.compile(r"<div id=\"hrel\">.*?<br/>([\d\.]+)<span class='unit'>%</span>", re.DOTALL)
 PATTERN_PRESSURE = re.compile(r"<div id=\"pres\">.*?<br/>([\d\.]+)<span class='unit'>hPa</span>", re.DOTALL)
@@ -42,12 +43,23 @@ class AvametApiClient:
     def _parse_html(self, html: str) -> Dict[str, Any]:
         """Parse the HTML content into a dictionary."""
         data: Dict[str, Any] = {
+            "name": None,
             "temperature": None,
             "humidity": None,
             "pressure": None,
             "wind_speed": None,
             "camera_url": None,
         }
+
+        # Match name
+        match_name = PATTERN_NAME.search(html)
+        if match_name:
+            # We want to replace HTML escape character &agrave; -> à, etc. if required,
+            # but HA might handle this or we can clean it minimally. Right now
+            # let's just extract the raw text and replace typical newlines/spaces
+            main_name = match_name.group(1).strip()
+            sub_name = match_name.group(2).strip()
+            data["name"] = f"{main_name} - {sub_name}"
 
         # Match temperature
         match_temp = PATTERN_TEMP.search(html)
@@ -94,5 +106,10 @@ class AvametApiClient:
                 data["camera_url"] = cam_url
             else:
                 data["camera_url"] = f"{BASE_URL}/{cam_url}"
+
+        # Quick HTML entity unescaping for the name so it looks natural
+        if data["name"]:
+            import html as html_parser
+            data["name"] = html_parser.unescape(data["name"])
 
         return data

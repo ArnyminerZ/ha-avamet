@@ -46,9 +46,14 @@ class AvametWeatherEntity(CoordinatorEntity[AvametDataUpdateCoordinator], Weathe
         self._attr_native_wind_speed_unit = UnitOfSpeed.KILOMETERS_PER_HOUR
         
         self._attr_unique_id = f"{self.station_id}_weather"
+        
+        # Use extracted name if available
+        station_name = self.coordinator.data.get("name")
+        display_name = station_name if station_name else f"AVAMET Station {self.station_id}"
+        
         self._attr_device_info = {
             "identifiers": {(DOMAIN, self.station_id)},
-            "name": f"AVAMET Station {self.station_id}",
+            "name": display_name,
             "manufacturer": "AVAMET",
             "model": "Station",
         }
