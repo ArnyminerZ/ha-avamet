@@ -35,8 +35,11 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
          # Rough heuristical validation
          raise ValueError("invalid_data")
 
+    station_name = result.get("name")
+    title = station_name if station_name else f"AVAMET Station {data[CONF_STATION_ID]}"
+
     # Return info that you want to store in the config entry.
-    return {"title": f"AVAMET Station {data[CONF_STATION_ID]}"}
+    return {"title": title}
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for AVAMET."""
