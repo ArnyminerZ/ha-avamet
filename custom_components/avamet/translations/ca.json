@@ -1,0 +1,20 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Configuració d'AVAMET",
+                "description": "Introdueix l'ID de l'estació d'AVAMET que vols monitoritzar (ex: c24m072e02)",
+                "data": {
+                    "station_id": "ID de l'estació"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "No s'ha pogut connectar o les dades de l'estació no són vàlides. Comproveu l'ID.",
+            "unknown": "S'ha produït un error inesperat"
+        },
+        "abort": {
+            "already_configured": "El dispositiu ja està configurat"
+        }
+    }
+}

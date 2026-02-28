@@ -1,0 +1,12 @@
+{
+  "domain": "avamet",
+  "name": "AVAMET",
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://www.avamet.org/",
+  "integration_type": "device",
+  "iot_class": "cloud_polling",
+  "requirements": ["aiohttp"],
+  "version": "1.0.0"
+}
