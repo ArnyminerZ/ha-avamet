@@ -57,6 +57,8 @@ class AvametApiClient:
         """Parse the HTML content into a dictionary."""
         data: Dict[str, Any] = {
             "name": None,
+            "latitude": None,
+            "longitude": None,
             "temperature": None,
             "humidity": None,
             "pressure": None,
@@ -152,6 +154,9 @@ class AvametApiClient:
                 
                 lat_decimal = dms_to_decimal(lat_d, lat_m, lat_s, lat_dir)
                 lon_decimal = dms_to_decimal(lon_d, lon_m, lon_s, lon_dir)
+                
+                data["latitude"] = lat_decimal
+                data["longitude"] = lon_decimal
                 
                 # Check day/night using Astral
                 from astral import LocationInfo

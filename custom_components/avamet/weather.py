@@ -12,6 +12,7 @@ from homeassistant.const import UnitOfTemperature, UnitOfPressure, UnitOfSpeed
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from typing import Any
 
 from .const import DOMAIN
 from .coordinator import AvametDataUpdateCoordinator
@@ -82,3 +83,13 @@ class AvametWeatherEntity(CoordinatorEntity[AvametDataUpdateCoordinator], Weathe
     def native_wind_speed(self) -> float | None:
         """Return the wind speed."""
         return self.coordinator.data.get("wind_speed")
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return entity specific state attributes."""
+        attrs = {}
+        if self.coordinator.data.get("latitude") is not None:
+            attrs["latitude"] = self.coordinator.data["latitude"]
+        if self.coordinator.data.get("longitude") is not None:
+            attrs["longitude"] = self.coordinator.data["longitude"]
+        return attrs
