@@ -2,8 +2,12 @@
 import logging
 import re
 from typing import Any, Dict
+from datetime import datetime
 
 import aiohttp
+from homeassistant.helpers.sun import get_astral_location
+from astral import LocationInfo
+from astral.sun import sun
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -12,12 +16,21 @@ DATA_URL = f"{BASE_URL}/mxo_i.php?id={{station_id}}"
 
 # Regex patterns for parsing AVAMET HTML
 PATTERN_NAME = re.compile(r"<div id=\"estacio\"[^>]*>\s*(.*?)\s*<br><span class=\"subnom\">\s*(.*?)\s*</span>", re.DOTALL)
+PATTERN_COORDS = re.compile(r"(\d+)&deg;\s*(\d+)'\s*([\d\.]+)&quot;\s*([NS])\s*,\s*(\d+)&deg;\s*(\d+)'\s*([\d\.]+)&quot;\s*([EW])")
 PATTERN_TEMP = re.compile(r"<div id=\"temp_mit\">([\d,-]+)&deg;</div>")
 PATTERN_HUMIDITY = re.compile(r"<div id=\"hrel\">.*?<br/>([\d\.]+)<span class='unit'>%</span>", re.DOTALL)
 PATTERN_PRESSURE = re.compile(r"<div id=\"pres\">.*?<br/>([\d\.]+)<span class='unit'>hPa</span>", re.DOTALL)
 PATTERN_WIND_SPEED = re.compile(r"<div id=\"vent\">.*风.*?<br/>([\d\.]+)<span class='unit'>km/h</span>", re.DOTALL | re.IGNORECASE)
 PATTERN_WIND_SPEED_ALT = re.compile(r"<div id=\"vent\">.*?<br/>([\d\.]+)<span class='unit'>km/h</span>", re.DOTALL)
+PATTERN_RAIN_HUI = re.compile(r"<div id=\"prec\">[^<]*?hui[^<]*?<br/>([\d,-]+)<span class='unit'>mm</span>", re.DOTALL | re.IGNORECASE)
 PATTERN_CAMERA = re.compile(r"<img class=\"webcamD\" src=\"(.*?)\"")
+
+def dms_to_decimal(degrees: int, minutes: int, seconds: float, direction: str) -> float:
+    """Convert DMS to Decimal Degrees format."""
+    decimal = degrees + (minutes / 60.0) + (seconds / 3600.0)
+    if direction in ['S', 'W']:
+        decimal *= -1
+    return decimal
 
 class AvametApiClient:
     """API Client to interact with AVAMET real-time pages."""
@@ -48,6 +61,8 @@ class AvametApiClient:
             "humidity": None,
             "pressure": None,
             "wind_speed": None,
+            "rain_today": None,
+            "condition": None,
             "camera_url": None,
         }
 
@@ -107,9 +122,58 @@ class AvametApiClient:
             else:
                 data["camera_url"] = f"{BASE_URL}/{cam_url}"
 
+        # Match rain today (pluja hui)
+        match_rain = PATTERN_RAIN_HUI.search(html)
+        if match_rain:
+            val = match_rain.group(1).replace(",", ".")
+            try:
+                data["rain_today"] = float(val)
+            except ValueError:
+                pass
+
         # Quick HTML entity unescaping for the name so it looks natural
         if data["name"]:
             import html as html_parser
             data["name"] = html_parser.unescape(data["name"])
+
+        # Determine conditions via Coordinates and Astral
+        match_coords = PATTERN_COORDS.search(html)
+        if match_coords:
+            try:
+                lat_d = int(match_coords.group(1))
+                lat_m = int(match_coords.group(2))
+                lat_s = float(match_coords.group(3))
+                lat_dir = match_coords.group(4)
+                
+                lon_d = int(match_coords.group(5))
+                lon_m = int(match_coords.group(6))
+                lon_s = float(match_coords.group(7))
+                lon_dir = match_coords.group(8)
+                
+                lat_decimal = dms_to_decimal(lat_d, lat_m, lat_s, lat_dir)
+                lon_decimal = dms_to_decimal(lon_d, lon_m, lon_s, lon_dir)
+                
+                # Check day/night using Astral
+                from astral import LocationInfo
+                from astral.sun import sun
+                from datetime import datetime, timezone
+                import pytz # Standard dependency used by astral if necessary, or simple UTC comparison
+
+                loc = LocationInfo(timezone="UTC", latitude=lat_decimal, longitude=lon_decimal)
+                s = sun(loc.observer, date=datetime.now())
+                
+                now = datetime.now(timezone.utc)
+                is_day = s["sunrise"] < now < s["sunset"]
+
+                # Extremely basic heuristical estimation
+                rain = data.get("rain_today", 0) or 0
+                if rain > 0:
+                    data["condition"] = "rainy"
+                elif not is_day:
+                    data["condition"] = "clear-night"
+                else:
+                    data["condition"] = "sunny"
+            except Exception as e:
+                _LOGGER.debug(f"Failed to extrapolate conditions: {e}")
 
         return data

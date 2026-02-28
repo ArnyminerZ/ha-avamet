@@ -61,10 +61,7 @@ class AvametWeatherEntity(CoordinatorEntity[AvametDataUpdateCoordinator], Weathe
     @property
     def condition(self) -> str | None:
         """Return the current condition."""
-        # AVAMET MXO current status pages don't provide a direct string condition,
-        # but we could guess sunny or cloudy. For now, since it wasn't requested,
-        # we can just return None.
-        return None
+        return self.coordinator.data.get("condition")
 
     @property
     def native_temperature(self) -> float | None:
