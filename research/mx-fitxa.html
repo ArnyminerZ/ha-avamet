@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ca" class=" uojaugxx idc0_350"><head>
+<!-- Google tag (gtag.js) -->
+<script async="" src="mx-fitxa_files/google-analytics_analytics.js"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-0PY4VM0H95');
+</script>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#000000">
+<meta name="Description" content="Associació Valenciana de Meteorologia. Reunions, jornades, excursions, bancs de dades, concursos, instal·lacions d’estacions, convenis de col·laboració">
+<meta name="Keywords" content="Oratge Temps Tiempo Alacant València Castelló País Valencià Comunitat Valenciana">
+<title>AVAMET MX Fitxa tècnica</title>
+<link href="mx-fitxa_files/estil.css" rel="stylesheet">
+<link href="mx-fitxa_files/estil-menu.css" rel="stylesheet">
+
+<!-- PRIVACITAT -->
+<!--<script async type="text/javascript" src="//clickiocmp.com/t/consent_230264.js"></script>-->
+
+<!-- Llibrerires -->
+<!--<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>-->
+<script src="mx-fitxa_files/jquery-3.6.0.min.js"></script>
+	
+<!-- Table Sorter -->
+<script src="mx-fitxa_files/jquery.tablesorter.min.js"></script>
+	
+<!-- FancyBox-->
+<link rel="stylesheet" href="mx-fitxa_files/jquery.fancybox.min.css">
+<script src="mx-fitxa_files/jquery.fancybox.min.js"></script>
+
+
+<!-- Twitter Card data -->
+<meta name="twitter:title" content="AVAMET">
+<meta name="twitter:description" content="Associació Valenciana de Meteorologia">
+
+<!-- Open Graph data -->
+<meta property="og:title" content="AVAMET">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://www.avamet.org/imatges/logoavamet-gran.png">
+<meta property="og:description" content="Associació Valenciana de Meteorologia">
+<meta property="og:site_name" content="AVAMET.org">
+<meta property="og:url" content="https://www.avamet.org/">
+<script type="application/ld+json">
+{
+  "@context": "http://www.schema.org",
+  "@type": "Organization",
+  "name": "AVAMET",
+  "url": "https://www.avamet.org",
+  "sameAs" : [
+   "https://www.facebook.com/avametmeteo/",
+   "https://www.facebook.com/avametassociacio/",
+   "https://twitter.com/avamet",
+   "https://www.instagram.com/avamet_meteo/",
+   "https://www.linkedin.com/company/avamet/",
+   "https://www.youtube.com/channel/UCVAHmom1_g6EZTS2MYUx8Eg"
+   ],
+  "logo": "https://www.avamet.org/imatges/logoavamet-gran.png",
+  "description": "Associació Valenciana de Meteorologia"
+}
+</script>
+<script src="mx-fitxa_files/lazysizes.min.js" async=""></script>
+<script src="mx-fitxa_files/avametorg.js" async=""></script>
+<style type="text/css">.fancybox-margin{margin-right:0px;}</style></head>
+
+<body>
+<div id="continent" class="clearfix">
+    <!-- Load Leaflet from CDN -->
+    <link rel="stylesheet" href="mx-fitxa_files/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ==" crossorigin="">
+    <script src="mx-fitxa_files/leaflet.js" integrity="sha512-tAGcCfR4Sc5ZP5ZoVz0quoZDYX5aCtEm/eu1KhSLj2c9eFrylXZknQYmxUssFaVJKvvc0dJQixhGjG2yXWiV9Q==" crossorigin=""></script>
+
+
+    <!-- Load Esri Leaflet from CDN -->
+    <script src="mx-fitxa_files/esri-leaflet.js" integrity="sha512-6BBVttv13OVrrUSoGmy9/aIVHateyIEGFaQxqnzCgXT9LNCAQ1Cxxj43R6Eq0ynydS7a7bLLfmEWwXFiO6lW2g==" crossorigin=""></script>
+
+	<script src="mx-fitxa_files/leaflet.fullscreen.min.js"></script>
+	<link href="mx-fitxa_files/leaflet.fullscreen.css" rel="stylesheet">
+
+	<script src="mx-fitxa_files/leaflet-omnivore.min.js"></script>
+<div id="capCombi" class="clearfix"> 
+		<img id="imgPC" src="mx-fitxa_files/logo_dalt.png" alt="Logo AVAMET">
+		<img id="imgMB" src="mx-fitxa_files/logo_peu.png" alt="Logo AVAMET">
+<script>
+function getCookie(c_name){
+	var c_value = document.cookie;
+	var c_start = c_value.indexOf(" " + c_name + "=");
+	if (c_start == -1){
+		c_start = c_value.indexOf(c_name + "=");
+	}
+	if (c_start == -1){
+		c_value = null;
+	}else{
+		c_start = c_value.indexOf("=", c_start) + 1;
+		var c_end = c_value.indexOf(";", c_start);
+		if (c_end == -1){
+			c_end = c_value.length;
+		}
+		c_value = unescape(c_value.substring(c_start,c_end));
+	}
+	return c_value;
+}
+
+function setCookie(c_name,value,exdays){
+	var exdate=new Date();
+	exdate.setDate(exdate.getDate() + exdays);
+	var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString()) + "; path=/";
+	document.cookie=c_name + "=" + c_value;
+}
+function PonerCookie(){
+	setCookie('avisocookies','1',365);
+	document.getElementById("barracookies").style.display="none";
+}
+</script>
+<div id="registre">
+    <div id="regidioma" class="clearfix">
+        <a class="verd" href="https://www.avamet.org/__reg_id.php?lng=es&amp;web=www.avamet.org/mx-fitxa.php?id=c24m072e02">Español</a> |
+        <a class="verd" href="https://www.avamet.org/__reg_id.php?lng=va&amp;web=www.avamet.org/mx-fitxa.php?id=c24m072e02">Valencià</a>
+    </div>
+
+    <div id="regusuari" class="clearfix">
+        Benvolgut visitant, si us plau, ingressa&nbsp;
+        <a href="https://www.avamet.org/avamet_oblidat.php" class="verd">Recuperar contrasenya</a>
+
+        <form action="__reg_in.php" class="validar" method="post" style="margin: 4px 0;" onsubmit="return comprovaCookies();">
+            <input class="fregistre" type="text" name="usuari" size="15" value="usuari">
+            <input class="fregistre" type="password" name="pass" size="10">
+            <input class="fregistre" type="submit" value="ingressar">
+            <input class="fregistre" type="hidden" name="adreca" value="www.avamet.org/mx-fitxa.php?id=c24m072e02">
+        </form>
+    </div>
+</div>
+
+<script>
+function comprovaCookies() {
+    // Intentem crear una cookie de prova
+    document.cookie = "prova_cookie=1; path=/";
+    const cookiesActives = document.cookie.indexOf("prova_cookie=") !== -1;
+
+    if (!cookiesActives) {
+        alert("Les cookies estan desactivades al teu navegador i/o no permets que es guarden dades al teu dispositiu.\n\nPer iniciar sessió a AVAMET, cal permetre-les i s'han de poder guardar dades almenys per a aquest lloc web.\n\nConsulta la configuració del navegador i activa les cookies i permet que es puguen guardar dades.");
+        return false; // Evitem que s’envie el formulari
+    }
+
+    // Esborrem la cookie de prova per netejar
+    document.cookie = "prova_cookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    return true; // Tot correcte, es pot enviar
+}
+</script>
+         
+</div>
+<nav id="menu">
+  <label for="tm" id="toggle-menu">Menú <span class="drop-icon">▾</span></label>
+  <input type="checkbox" id="tm">
+  <ul class="main-menu clearfix">
+    <li><a href="https://www.avamet.org/index.php">Inici</a></li>
+    <li><a href="#">AVAMET 
+        <span class="drop-icon">▾</span>
+        <label title="Toggle Drop-down" class="drop-icon" for="sm1">▾</label>
+      </a>
+      <input type="checkbox" id="sm1">
+      <ul class="sub-menu">
+        <li><a href="https://www.avamet.org/avamet.php?id=s01c00t01">Objectius i activitats</a></li>
+        <li><a href="https://www.avamet.org/avamet.php?id=s01c00t02">Estatuts</a></li>
+        <li><a href="https://www.avamet.org/avamet.php?id=s01c00t03">Junta Directiva</a></li>
+<!--        <li><a href="#">Eleccions
+            <span class="drop-icon">▾</span>
+            <label title="Toggle Drop-down" class="drop-icon" for="sm2">▾</label>
+          </a>
+          <input type="checkbox" id="sm2">
+          <ul class="sub-menu s2nivell">
+            <li><a href="eleccions-2018.php">Eleccions 2019-2022</a></li>
+            <li><a href="eleccions-2023.php">Eleccions 2023</a></li>
+          </ul>
+        </li> -->
+        <li><a href="https://www.avamet.org/avamet.php?id=s01c00t06">Avantatges dels socis</a></li>
+        <li><a href="https://www.avamet.org/avamet.php?id=s01c00t04">Fes-te'n soci</a></li>
+        <li><a href="https://www.avamet.org/avamet.php?id=s01c00t05">Identitat corporativa</a></li>
+        <li><a href="https://www.avamet.org/avamet.php?id=s06c00t01">Contacte</a></li>
+      </ul>
+    </li>
+    <li><a href="#">Activitats
+        <span class="drop-icon">▾</span>
+        <label title="Toggle Drop-down" class="drop-icon" for="sm3">▾</label>
+      </a>
+      <input type="checkbox" id="sm3">
+      <ul class="sub-menu">
+		<li><a href="https://www.avamet.org/activitats.php?id=s07c00t01">Assemblees i reunions</a></li>
+		<li><a href="https://www.avamet.org/activitats.php?id=s07c00t02">Trobades</a></li>
+		<li><a href="https://www.avamet.org/activitats.php?id=s07c00t03">Conferències i jornades</a></li>
+		<li><a href="https://www.avamet.org/activitats.php?id=s07c00t05">Bancs de dades</a></li>
+		<li><a href="https://www.avamet.org/activitats.php?id=s07c00t06">Concursos</a></li>
+		<li><a href="https://www.avamet.org/activitats.php?id=s07c00t07">Instal·lació d'estacions</a></li>
+		<li><a href="https://www.avamet.org/activitats.php?id=s07c00t08">Convenis i relacions institucionals</a></li>
+		<li><a href="https://www.avamet.org/activitats.php?id=s07c00t09">Mitjans de comunicació</a></li>
+      </ul>
+    </li>  
+    <li><a href="#">meteoXarxa
+        <span class="drop-icon">▾</span>
+        <label title="Toggle Drop-down" class="drop-icon" for="smX">▾</label>
+      </a>
+      <input type="checkbox" id="smX">
+      <ul class="sub-menu">
+        <li><a href="https://www.avamet.org/mxo-mxo.php">MXO A temps real
+            <span class="drop-icon">▾</span>
+            <label title="Toggle Drop-down" class="drop-icon" for="smO">▾</label>
+          </a>
+          <input type="checkbox" id="smO">
+          <ul class="sub-menu s2nivell">
+            <li><a href="https://www.avamet.org/mxo-mxo.php">MXO a temps real</a></li>
+            <li><a href="https://www.avamet.org/mxo-webcams.php">Webcams a temps real</a></li>
+            <li><a href="https://www.avamet.org/mxo-altitud.php">Temperatura/altitud</a></li>
+            <li><a href="https://www.avamet.org/mxo-combinat.php">Gràfics combinats</a></li>
+          </ul>
+        </li>
+        <li><a href="https://www.avamet.org/mxo-mxo-prec.php">MXO de precipitació</a></li>
+		<li><a href="https://www.avamet.org/mx-meteoxarxa.php">MX Dades històriques</a></li>
+        <li><a href="#">Mapes
+            <span class="drop-icon">▾</span>
+            <label title="Toggle Drop-down" class="drop-icon" for="smP">▾</label>
+          </a>
+          <input type="checkbox" id="smP">
+          <ul class="sub-menu s2nivell">
+            <li><a href="https://www.avamet.org/mx-mapes.php?tipus=mensuals">Mapes mensuals</a></li>
+            <li><a href="https://www.avamet.org/mx-mapes.php?tipus=estacionals">Mapes estacionals</a></li>
+            <li><a href="https://www.avamet.org/mx-mapes.php?tipus=anuals">Mapes anuals</a></li>
+          </ul>
+        </li>
+		<li><a href="https://www.avamet.org/mx-episodis.php" title="Episodis">Episodis</a></li>
+        <li><a href="#">Estadístiques
+            <span class="drop-icon">▾</span>
+            <label title="Toggle Drop-down" class="drop-icon" for="smE">▾</label>
+          </a>
+          <input type="checkbox" id="smE">
+          <ul class="sub-menu s2nivell">
+            <li><a href="https://www.avamet.org/mx-precipitacio-mensual.php">Pluja mensual</a></li>
+            <li><a href="https://www.avamet.org/mx-precipitacio-mensual-any-agricola.php">Pluja mensual (any agrícola)</a></li>
+            <li><a href="https://www.avamet.org/mx-precipitacio-mensual-any-hidrologic.php">Pluja mensual (any hidrològic)</a></li>
+            <li><a href="https://www.avamet.org/mx-precipitacio-anual.php">Pluja anual</a></li>
+            <li><a href="https://www.avamet.org/mx-temperatura-mitjana.php">Temp. mitjana</a></li>
+            <li><a href="https://www.avamet.org/mx-temperatura-minima.php">Temp. mínima</a></li>
+            <li><a href="https://www.avamet.org/mx-temperatura-maxima.php">Temp. màxima</a></li>
+            <li><a href="https://www.avamet.org/mx-temperatura-t020.php">Nits tropicals</a></li>
+            <li><a href="https://www.avamet.org/mx-temperatura-t032.php">Dies de calor</a></li>
+            <li><a href="https://www.avamet.org/mx-temperatura-t000.php">Gelades</a></li>
+            <li><a href="https://www.avamet.org/mx-temperatura-t010.php">Dies de fred</a></li>
+          </ul>
+        </li>
+		<li><a href="https://www.avamet.org/mx-fotografies.php">Fotografies</a></li>
+		<li><a href="https://www.avamet.org/premsa.php">Premsa</a></li>
+		<li><a href="https://www.avamet.org/pastilla.php">Pastilla/widget web</a></li>
+		<li><a href="https://www.avamet.org/alta-estacio.php">Alta d′una estació</a></li>
+      </ul>
+    </li>  
+    <li><a href="#">Temps
+        <span class="drop-icon">▾</span>
+        <label title="Toggle Drop-down" class="drop-icon" for="sm4">▾</label>
+      </a>
+      <input type="checkbox" id="sm4">
+      <ul class="sub-menu">
+		<li><a href="https://www.avamet.org/temps-situacio.php">Situació actual</a></li>
+		<li><a href="https://www.avamet.org/temps-models.php" title="Models">Models</a></li>
+		<li><a href="https://www.avamet.org/temps-avisos.php" title="Alertes i avisos">Alertes i avisos</a></li>
+      </ul>
+    </li>  
+    <li><a href="https://www.avamet.org/avapred_in.php">AVApred</a></li>
+    <li><a href="https://www.avamet.org/forum/">Fòrum</a></li>
+    <li><a href="https://www.avamet.org/tutorial.php">Tutorials</a></li>
+  </ul>
+</nav>
+
+
+
+  
+
+	<div id="fotoAmpla2"> 
+		<img src="mx-fitxa_files/fons018.jpg" alt="AVAMET paisatges">
+	</div>
+<link rel="stylesheet" href="mx-fitxa_files/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+
+
+	<div id="subnav" class="clearfix">
+		<ul>
+			<li><a href="https://www.avamet.org/mx-fitxa.php?id=c24m072e02">Fitxa tècnica</a></li>
+			<li><a href="https://www.avamet.org/mx-historia.php?id=c24m072e02">INFO</a></li>
+			<li><a href="https://www.avamet.org/mx-mxo.php?id=c24m072e02">MXO</a></li>
+								 
+			<li><a href="https://www.avamet.org/mx-webcam.php?id=c24m072e02">Webcam</a></li>
+			<!--<li><a href="mx-timelapse.php?id=">Timelapse</a></li>-->
+			<li><a href="https://www.avamet.org/mx-dia.php?id=c24m072e02">Últimes dades</a></li>
+			<li><a href="https://www.avamet.org/mx-mes.php?id=c24m072e02&amp;data=">Mensuals</a></li>
+			<li><a href="https://www.avamet.org/mx-any.php?id=c24m072e02&amp;data=">Anuals</a></li>
+			<li><a href="https://www.avamet.org/mx-grafiques.php?id=c24m072e02">Gràfiques</a></li>
+			<li><a href="https://www.avamet.org/mx-consultes.php?id=c24m072e02">Consultes</a></li>
+			<li><a href="https://www.avamet.org/mx-comparar.php?id=c24m072e02">Comparativa</a></li>
+			<li><a href="https://www.avamet.org/mx-clima.php?id=c24m072e02">Climatològiques</a></li>
+			<li><a href="https://www.avamet.org/mx-records.php?id=c24m072e02">Rècords</a></li>
+			<li><a href="https://www.avamet.org/mx-normal.php?id=c24m072e02">Clima del dia</a></li>
+			<li><a href="https://www.avamet.org/mx-previsio.php?id=c24m072e02">Previsió</a></li>
+		</ul>
+	</div>
+
+
+
+	<div class="anunci100 clearfix" style="padding-bottom:1em;">
+		<a href="https://unionalcoyana.com/" target="_blank"><img src="mx-fitxa_files/union-alcoyana-ample.gif" style="width:100%;" alt="Union Alcoyana"></a>
+	</div> 
+
+
+	<div id="estacioTitol"> 
+		<h1>
+        	<img src="mx-fitxa_files/estrela-avmt.png" width="32" height="32" alt="">
+            <!--<img src="imatges/mx-fonts/inforatge.jpg" width="64" height="32"  alt="Inforatge"/>-->        	<span class="muni">Bocairent</span>  Càmping Mariola        </h1>
+        <h2>Fitxa tècnica</h2>
+	</div>
+
+	<div id="interior" class="clearfix">
+		<div class="col2d4 clearfix">
+			<table class="fitxa">
+			<tbody><tr><td class="fitxaVarT" colspan="2">Localització</td></tr>
+			<tr><td class="fitxaVar">Classificació</td><td class="fitxaValN" style="background-color:#7defb4;"><img src="mx-fitxa_files/estrela-mx-avmt.png" width="13" height="13" alt=""> Estació propietat d'AVAMET</td></tr>
+			<tr><td class="fitxaVar">Municipi</td><td class="fitxaValN">Bocairent</td></tr>
+			<tr><td class="fitxaVar">Partida</td><td class="fitxaValN"></td></tr>
+			<tr><td class="fitxaVar">Ubicació</td><td class="fitxaValN">Càmping Mariola</td></tr>
+			<tr><td class="fitxaVar">Comarca</td><td class="fitxaVal">la Vall d′Albaida</td></tr>
+			<tr><td class="fitxaVar">Província</td><td class="fitxaVal">València</td></tr>
+			<tr><td class="fitxaVar">Posició geogràfica</td><td class="fitxaValN">38° 45' 10.44" N, 00° 33' 2.52" W</td></tr>
+			<tr><td class="fitxaVar">Altitud (sobre la mar)</td><td class="fitxaValN">888 m</td></tr>
+			<tr><td class="fitxaVar">Altitud de la gareta (sòl més proper)</td><td class="fitxaVal"> m</td></tr>
+			<tr><td class="fitxaVar">Altitud de l′anemòmetre (carrer)</td><td class="fitxaVal">1.5 m</td></tr>
+			<tr><td class="fitxaVar">Tipus d'entorn</td><td class="fitxaVal">Rural (població aïllada) - muntanya</td></tr>
+			<tr><td class="fitxaVar">Tipus de sòl</td><td class="fitxaVal">Vegetació irregular</td></tr>
+			</tbody></table>
+
+			<table class="fitxa">
+			<tbody><tr><td class="fitxaVarT" colspan="2">Estació</td></tr>
+			<tr><td class="fitxaVar">Model</td><td class="fitxaValN">Davis Vantage Pro2<img src="mx-fitxa_files/davis-vantage-pro2.jpg" style="width:40%;float:right;"></td></tr>
+			<tr><td class="fitxaVar">Any de compra</td><td class="fitxaVal">2020</td></tr>
+			<tr><td class="fitxaVar">Any de instal·lació</td><td class="fitxaVal">2010</td></tr>
+			<tr><td class="fitxaVar">Protecció T/H</td><td class="fitxaVal">Per defecte del model d'estació</td></tr>
+			<tr><td class="fitxaVar">Pluviòmetre modificat</td><td class="fitxaVal">  (0.2 mm cada bolcada)</td></tr>
+			<tr><td class="fitxaVar">Pluviòmetre de correcció</td><td class="fitxaVal">No</td></tr>
+			<tr><td class="fitxaVar">SAI</td><td class="fitxaVal">Sí</td></tr>
+			<tr><td class="fitxaVar">Programa de gestió</td><td class="fitxaVal">WeatherLink</td></tr>
+			</tbody></table>
+
+   			<table class="fitxa">
+			<tbody><tr><td class="fitxaVarT" colspan="2">Auditoria</td></tr>
+			<tr><td class="fitxaVarST" colspan="2" style="display:none;">Gareta</td></tr>
+			<tr><td class="fitxaVarST" colspan="2" style="display:none;">Anemòmetre</td></tr>
+			<tr><td class="fitxaVarST" colspan="2" style="display:none;">Pluviòmetre</td></tr>
+			<tr><td class="fitxaVarST" colspan="2" style="display:none;">Pluviòmetre manual</td></tr>
+			<tr><td class="fitxaVar">Segell TERMO HIGROMÈTRIC</td><td class="fitxaVal" style="background-color:#61e2b8;"><img src="mx-fitxa_files/check-cercle.png" title="AUDITADA: Segell termohigromètic"></td></tr>
+			<tr><td class="fitxaVar">Segell PLUVIOMÈTRIC</td><td class="fitxaVal" style="background-color:#61e2b8;"><img src="mx-fitxa_files/check-cercle.png" title="AUDITADA: Segell pluviomètric"></td></tr>
+			<tr><td class="fitxaVar">Segell EÒLIC</td><td class="fitxaVal"><img src="mx-fitxa_files/check-no-cercle.png"></td></tr>
+			<tr><td class="fitxaVar">Revisió de dades</td><td class="fitxaVal">31-10-2017</td></tr>
+			</tbody></table>
+
+			<table class="fitxa">
+			<tbody><tr><td class="fitxaVarT" colspan="2">Altra informació</td></tr>
+			<tr><td class="fitxaVar">Propietari</td><td class="fitxaValN">
+			AVAMET
+            </td></tr>
+			<tr><td class="fitxaVar">Observ. del propietari</td><td class="fitxaVal" style="font-size:80%;line-height: 150%; padding: 1%;"></td></tr>
+			</tbody></table>
+            
+
+            
+        </div>
+        
+        <div class="col2d4 clearfix">
+            <div id="fitxaFoto">
+				<div><img src="mx-fitxa_files/c24m072e02.jpg"></div>	               
+            </div>
+	
+			
+			<div class="fitxaMapa leaflet-container leaflet-touch leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" id="fitxaMapaDiv" style="position: relative;" tabindex="0"><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(0px, 0px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer " style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 18; transform: translate3d(0px, 0px, 0px) scale(1);"><img alt="" role="presentation" src="mx-fitxa_files/196_003.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(410px, 207px, 0px); opacity: 1;"><img alt="" role="presentation" src="mx-fitxa_files/195_005.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(410px, -49px, 0px); opacity: 1;"><img alt="" role="presentation" src="mx-fitxa_files/196.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(154px, 207px, 0px); opacity: 1;"><img alt="" role="presentation" src="mx-fitxa_files/196_002.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(666px, 207px, 0px); opacity: 1;"><img alt="" role="presentation" src="mx-fitxa_files/197_005.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(410px, 463px, 0px); opacity: 1;"><img alt="" role="presentation" src="mx-fitxa_files/195.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(154px, -49px, 0px); opacity: 1;"><img alt="" role="presentation" src="mx-fitxa_files/195_002.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(666px, -49px, 0px); opacity: 1;"><img alt="" role="presentation" src="mx-fitxa_files/197_002.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(154px, 463px, 0px); opacity: 1;"><img alt="" role="presentation" src="mx-fitxa_files/197.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(666px, 463px, 0px); opacity: 1;"><img alt="" role="presentation" src="mx-fitxa_files/196_004.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-102px, 207px, 0px); opacity: 1;"><img alt="" role="presentation" src="mx-fitxa_files/196_005.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(922px, 207px, 0px); opacity: 1;"><img alt="" role="presentation" src="mx-fitxa_files/195_004.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-102px, -49px, 0px); opacity: 1;"><img alt="" role="presentation" src="mx-fitxa_files/195_003.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(922px, -49px, 0px); opacity: 1;"><img alt="" role="presentation" src="mx-fitxa_files/197_004.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-102px, 463px, 0px); opacity: 1;"><img alt="" role="presentation" src="mx-fitxa_files/197_003.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(922px, 463px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-shadow-pane"></div><div class="leaflet-pane leaflet-overlay-pane"></div><div class="leaflet-pane leaflet-marker-pane"><img src="mx-fitxa_files/map-marker-point.png" class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" style="margin-left: -16px; margin-top: -30px; transform: translate3d(465px, 240px, 0px); z-index: 240;" alt="" tabindex="0"></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(65335.5px, 50208.6px, 0px) scale(256);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"><div class="leaflet-control-zoom leaflet-bar leaflet-control"><a class="leaflet-control-zoom-in" href="#" title="Zoom in" role="button" aria-label="Zoom in">+</a><a class="leaflet-control-zoom-out" href="#" title="Zoom out" role="button" aria-label="Zoom out">−</a></div><div class="leaflet-control-fullscreen leaflet-bar leaflet-control"><a class="leaflet-control-fullscreen-button leaflet-bar-part" href="#" title="View Fullscreen"></a></div></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"><div class="leaflet-control-attribution leaflet-control"><a href="http://leafletjs.com/" title="A JS library for interactive maps">Leaflet</a> | Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors</div></div></div></div>
+        </div>
+	</div>
+		
+
+</div>
+
+<div id="peu" class="clearfix">
+	<div id="peuContinent">
+		<img src="mx-fitxa_files/logo_peu.png" alt="Logo AVAMET blanc" class="logoN">
+		<div id="promosollutia" style="float:right;right:1%;font-size: 80%;padding: 1.5%;color: #ffffff;">
+			Web allotjada a <a href="https://www.sollutia.com/" target="_blank" class="verd">Sollutia</a>
+		</div>
+	</div>
+</div>
+
+<div id="peu2" class="clearfix">
+	<div id="creative">
+		<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.ca"><img alt="Llicència de Creative Commons" src="mx-fitxa_files/88x31.png">La web d'AVAMET (188.93.73.96) i els seus continguts estan subjectes a una llicència de<br><strong>Reconeixement - No Comercial - Sense Obra Derivada</strong></a>
+	</div>
+	<div id="politica" style="float:right;right:1%;font-size: 70%;padding: 1.5%;color: #ffffff;">
+		<a class="blanc" href="https://www.avamet.org/politicacookies.php">Avís legal - Política de privacitat - Política de cookies</a> - <a href="#" class="blanc" onclick="if(window.__lxG__consent__!==undefined&amp;&amp;window.__lxG__consent__.getState()!==null){window.__lxG__consent__.showConsent()} else {alert('This function only for users from European Economic Area (EEA)')}; return false">Canviar configuració privacitat</a>
+	</div>
+
+</div>
+
+<script>
+function ocultarNoticies(){
+document.getElementById('peuNoticies').style.display = 'none';
+document.cookie = "marquesina=1; max-age=86400;";
+}
+</script>
+<script src="mx-fitxa_files/doubletaptogo.js"></script>
+<script>
+	$( function()
+	{
+		$( '#nav li:has(ul)' ).doubleTapToGo();
+	});
+</script>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async="" src="mx-fitxa_files/google-analytics_analytics_002.js"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-34835297-1');
+</script>
+
+
+
+
+  <script>
+    // position we will use later
+	var verda = L.icon({
+		iconUrl: 'https://www.avamet.org/js/leaflet/map-marker-point.png',
+		iconAnchor:   [16, 30]
+	});
+
+    var lat = 38.75290000; 
+    var lon = -0.55070000;
+
+    // initialize map
+    map = L.map('fitxaMapaDiv', {fullscreenControl: true}).setView([lat, lon], 9);
+
+    // set map tiles source
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+      maxZoom: 18,
+    }).addTo(map);
+
+
+    // add marker to the map
+    //marker = L.marker([lat, lon],{icon: iconaEstacio}).addTo(map);
+    marker = L.marker([lat, lon], {icon:verda}).addTo(map);
+
+  </script>
+
+
+
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		$(".fancybox").fancybox({arrows: false});
+	});
+</script>
+
+<script type="text/javascript" src="mx-fitxa_files/jquery.mousewheel-3.0.6.pack.js"></script>
+<link rel="stylesheet" href="mx-fitxa_files/jquery.fancybox.css" type="text/css" media="screen">
+<script type="text/javascript" src="mx-fitxa_files/jquery.fancybox.pack.js"></script>
+
+</body></html>

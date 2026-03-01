@@ -16,5 +16,23 @@
         "abort": {
             "already_configured": "El dispositiu ja està configurat"
         }
+    },
+    "entity": {
+        "sensor": {
+            "audit_date": {
+                "name": "Data d'Auditoria"
+            }
+        },
+        "binary_sensor": {
+            "audit_temp_hum": {
+                "name": "Auditoria Termohigromètrica"
+            },
+            "audit_rain": {
+                "name": "Auditoria Pluviomètrica"
+            },
+            "audit_wind": {
+                "name": "Auditoria Eòlica"
+            }
+        }
     }
 }

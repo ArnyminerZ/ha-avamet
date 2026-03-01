@@ -45,11 +45,13 @@ class AvametCameraEntity(CoordinatorEntity[AvametDataUpdateCoordinator], Camera)
         station_name = self.coordinator.data.get("name")
         display_name = station_name if station_name else f"AVAMET Station {self.station_id}"
         
+        model = getattr(self.coordinator, "metadata", {}).get("model") or "Station"
+        
         self._attr_device_info = {
             "identifiers": {(DOMAIN, self.station_id)},
             "name": display_name,
             "manufacturer": "AVAMET",
-            "model": "Station",
+            "model": model,
         }
 
     async def async_camera_image(

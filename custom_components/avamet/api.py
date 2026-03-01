@@ -13,6 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 
 BASE_URL = "https://www.avamet.org"
 DATA_URL = f"{BASE_URL}/mxo_i.php?id={{station_id}}"
+METADATA_URL = f"{BASE_URL}/mx-fitxa.php?id={{station_id}}"
 
 # Regex patterns for parsing AVAMET HTML
 PATTERN_NAME = re.compile(r"<div id=\"estacio\"[^>]*>\s*(.*?)\s*<br><span class=\"subnom\">\s*(.*?)\s*</span>", re.DOTALL)
@@ -24,6 +25,15 @@ PATTERN_WIND_SPEED = re.compile(r"<div id=\"vent\">.*风.*?<br/>([\d\.]+)<span c
 PATTERN_WIND_SPEED_ALT = re.compile(r"<div id=\"vent\">.*?<br/>([\d\.]+)<span class='unit'>km/h</span>", re.DOTALL)
 PATTERN_RAIN_HUI = re.compile(r"<div id=\"prec\">[^<]*?hui[^<]*?<br/>([\d,-]+)<span class='unit'>mm</span>", re.DOTALL | re.IGNORECASE)
 PATTERN_CAMERA = re.compile(r"<img class=\"webcamD\" src=\"(.*?)\"")
+
+# Metadata extraction patterns
+PATTERN_MODEL = re.compile(r"<td class=\"fitxaVar\">Model</td><td class=\"fitxaValN\">(.*?)<img", re.DOTALL)
+PATTERN_AUDIT_DATE = re.compile(r"<td class=\"fitxaVar\">Revisi&oacute; de dades</td><td class=\"fitxaVal\">(.*?)</td>", re.DOTALL | re.IGNORECASE)
+PATTERN_AUDIT_DATE_ALT = re.compile(r"<td class=\"fitxaVar\">Revisi.*? de dades</td><td class=\"fitxaVal\">(.*?)</td>", re.DOTALL | re.IGNORECASE)
+PATTERN_SEGELL_TH = re.compile(r"<td class=\"fitxaVar\">Segell TERMO HIGROM.*?TRIC</td><td class=\"fitxaVal\"(?:.*?)><img src=\"(.*?)\"", re.DOTALL | re.IGNORECASE)
+PATTERN_SEGELL_PL = re.compile(r"<td class=\"fitxaVar\">Segell PLUVIOM.*?TRIC</td><td class=\"fitxaVal\"(?:.*?)><img src=\"(.*?)\"", re.DOTALL | re.IGNORECASE)
+PATTERN_SEGELL_WIND = re.compile(r"<td class=\"fitxaVar\">Segell E&ograve;LIC</td><td class=\"fitxaVal\"(?:.*?)><img src=\"(.*?)\"", re.DOTALL | re.IGNORECASE)
+PATTERN_SEGELL_WIND_ALT = re.compile(r"<td class=\"fitxaVar\">Segell E.*?LIC</td><td class=\"fitxaVal\"(?:.*?)><img src=\"(.*?)\"", re.DOTALL | re.IGNORECASE)
 
 def dms_to_decimal(degrees: int, minutes: int, seconds: float, direction: str) -> float:
     """Convert DMS to Decimal Degrees format."""
@@ -52,6 +62,52 @@ class AvametApiClient:
         except Exception as err:
             _LOGGER.error("Error fetching data from AVAMET for station %s: %s", self.station_id, err)
             raise
+
+    async def async_get_metadata(self) -> Dict[str, Any]:
+        """Fetch and parse device metadata from AVAMET."""
+        url = METADATA_URL.format(station_id=self.station_id)
+        
+        try:
+            async with self.session.get(url) as response:
+                response.raise_for_status()
+                html = await response.text()
+                return self._parse_metadata_html(html)
+        except Exception as err:
+            _LOGGER.error("Error fetching metadata from AVAMET for station %s: %s", self.station_id, err)
+            return {"model": None, "audit_date": None, "check_temp_hum": None, "check_rain": None, "check_wind": None}
+
+    def _parse_metadata_html(self, html: str) -> Dict[str, Any]:
+        """Parse the HTML content of the mx-fitxa page into a dictionary."""
+        data: Dict[str, Any] = {
+            "model": None,
+            "audit_date": None,
+            "check_temp_hum": None,
+            "check_rain": None,
+            "check_wind": None,
+        }
+
+        match_model = PATTERN_MODEL.search(html)
+        if match_model:
+            data["model"] = match_model.group(1).strip()
+
+        match_audit_date = PATTERN_AUDIT_DATE.search(html) or PATTERN_AUDIT_DATE_ALT.search(html)
+        if match_audit_date:
+            date_str = match_audit_date.group(1).strip()
+            if date_str:
+                data["audit_date"] = date_str
+
+        # For checks, "check-cercle.png" means audited/passed. "check-no-cercle.png" means not audited.
+        def _parse_check(pattern_result):
+            if pattern_result:
+                src = pattern_result.group(1).strip()
+                return "check-cercle.png" in src
+            return False
+
+        data["check_temp_hum"] = _parse_check(PATTERN_SEGELL_TH.search(html))
+        data["check_rain"] = _parse_check(PATTERN_SEGELL_PL.search(html))
+        data["check_wind"] = _parse_check(PATTERN_SEGELL_WIND.search(html) or PATTERN_SEGELL_WIND_ALT.search(html))
+
+        return data
 
     def _parse_html(self, html: str) -> Dict[str, Any]:
         """Parse the HTML content into a dictionary."""

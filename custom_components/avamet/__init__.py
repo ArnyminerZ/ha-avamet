@@ -12,7 +12,7 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS: list[Platform] = [Platform.WEATHER, Platform.CAMERA]
+PLATFORMS: list[Platform] = [Platform.WEATHER, Platform.CAMERA, Platform.SENSOR, Platform.BINARY_SENSOR]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up AVAMET from a config entry."""
@@ -21,6 +21,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     client = AvametApiClient(station_id=station_id, session=session)
     coordinator = AvametDataUpdateCoordinator(hass, client=client)
+
+    # Fetch device metadata once on boot
+    metadata = await client.async_get_metadata()
+    coordinator.metadata = metadata
 
     await coordinator.async_config_entry_first_refresh()
 
