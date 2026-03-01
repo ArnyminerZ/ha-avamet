@@ -37,9 +37,9 @@ class AvametWeatherEntity(CoordinatorEntity[AvametDataUpdateCoordinator], Weathe
     _attr_name = None
 
     @property
-    def supported_features(self) -> WeatherEntityFeature:
-        """Return supported features."""
-        return WeatherEntityFeature(0)
+    def forecast(self) -> list | None:
+        """Return the forecast."""
+        return None
 
     def __init__(self, coordinator: AvametDataUpdateCoordinator, entry: ConfigEntry) -> None:
         """Initialize the weather entity."""
