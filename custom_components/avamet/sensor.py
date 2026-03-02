@@ -21,10 +21,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import AvametDataUpdateCoordinator
+from .entity import AvametEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -85,10 +85,8 @@ async def async_setup_entry(
         async_add_entities(entities)
 
 
-class AvametSensor(CoordinatorEntity[AvametDataUpdateCoordinator], SensorEntity):
+class AvametSensor(AvametEntity, SensorEntity):
     """Implementation of an AVAMET sensor."""
-
-    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -97,22 +95,10 @@ class AvametSensor(CoordinatorEntity[AvametDataUpdateCoordinator], SensorEntity)
         description: SensorEntityDescription,
     ) -> None:
         """Initialize the sensor."""
-        super().__init__(coordinator)
+        super().__init__(coordinator, entry.data["station_id"])
         self.entity_description = description
-        self.station_id = entry.data["station_id"]
         
         self._attr_unique_id = f"{self.station_id}_{description.key}"
-        
-        station_name = self.coordinator.data.get("name")
-        display_name = station_name if station_name else f"AVAMET Station {self.station_id}"
-        model = getattr(self.coordinator, "metadata", {}).get("model") or "Station"
-        
-        self._attr_device_info = {
-            "identifiers": {(DOMAIN, self.station_id)},
-            "name": display_name,
-            "manufacturer": "AVAMET",
-            "model": model,
-        }
 
     @property
     def native_value(self) -> float | None:
@@ -120,27 +106,14 @@ class AvametSensor(CoordinatorEntity[AvametDataUpdateCoordinator], SensorEntity)
         return self.coordinator.data.get(self.entity_description.key)
 
 
-class AvametMetadataSensor(CoordinatorEntity[AvametDataUpdateCoordinator], SensorEntity):
+class AvametMetadataSensor(AvametEntity, SensorEntity):
     """Base class for AVAMET metadata sensors."""
     
-    _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     
     def __init__(self, coordinator: AvametDataUpdateCoordinator, entry: ConfigEntry) -> None:
         """Initialize the sensor."""
-        super().__init__(coordinator)
-        self.station_id = entry.data["station_id"]
-        
-        station_name = self.coordinator.data.get("name")
-        display_name = station_name if station_name else f"AVAMET Station {self.station_id}"
-        model = getattr(self.coordinator, "metadata", {}).get("model") or "Station"
-        
-        self._attr_device_info = {
-            "identifiers": {(DOMAIN, self.station_id)},
-            "name": display_name,
-            "manufacturer": "AVAMET",
-            "model": model,
-        }
+        super().__init__(coordinator, entry.data["station_id"])
 
 class AvametAuditDateSensor(AvametMetadataSensor):
     """AVAMET Audit Date Sensor."""
