@@ -12,6 +12,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import AvametDataUpdateCoordinator
+from .entity import AvametEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,31 +29,17 @@ async def async_setup_entry(
         async_add_entities([AvametCameraEntity(coordinator, entry)])
 
 
-class AvametCameraEntity(CoordinatorEntity[AvametDataUpdateCoordinator], Camera):
+class AvametCameraEntity(AvametEntity, Camera):
     """Implementation of an AVAMET camera."""
 
-    _attr_has_entity_name = True
     _attr_name = "Camera"
 
     def __init__(self, coordinator: AvametDataUpdateCoordinator, entry: ConfigEntry) -> None:
         """Initialize the camera entity."""
-        CoordinatorEntity.__init__(self, coordinator)
+        AvametEntity.__init__(self, coordinator, entry.data["station_id"])
         Camera.__init__(self)
         
-        self.station_id = entry.data["station_id"]
         self._attr_unique_id = f"{self.station_id}_camera"
-        
-        station_name = self.coordinator.data.get("name")
-        display_name = station_name if station_name else f"AVAMET Station {self.station_id}"
-        
-        model = getattr(self.coordinator, "metadata", {}).get("model") or "Station"
-        
-        self._attr_device_info = {
-            "identifiers": {(DOMAIN, self.station_id)},
-            "name": display_name,
-            "manufacturer": "AVAMET",
-            "model": model,
-        }
 
     async def async_camera_image(
         self, width: int | None = None, height: int | None = None

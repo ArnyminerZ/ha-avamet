@@ -11,11 +11,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature, UnitOfPressure, UnitOfSpeed
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from typing import Any
 
 from .const import DOMAIN
 from .coordinator import AvametDataUpdateCoordinator
+from .entity import AvametEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,10 +30,9 @@ async def async_setup_entry(
     async_add_entities([AvametWeatherEntity(coordinator, entry)])
 
 
-class AvametWeatherEntity(CoordinatorEntity[AvametDataUpdateCoordinator], WeatherEntity):
+class AvametWeatherEntity(AvametEntity, WeatherEntity):
     """Implementation of an AVAMET weather entity."""
 
-    _attr_has_entity_name = True
     _attr_name = None
 
     @property
@@ -43,8 +42,7 @@ class AvametWeatherEntity(CoordinatorEntity[AvametDataUpdateCoordinator], Weathe
 
     def __init__(self, coordinator: AvametDataUpdateCoordinator, entry: ConfigEntry) -> None:
         """Initialize the weather entity."""
-        super().__init__(coordinator)
-        self.station_id = entry.data["station_id"]
+        super().__init__(coordinator, entry.data["station_id"])
         
         # Determine the unit configurations based on the website
         self._attr_native_temperature_unit = UnitOfTemperature.CELSIUS
@@ -52,19 +50,6 @@ class AvametWeatherEntity(CoordinatorEntity[AvametDataUpdateCoordinator], Weathe
         self._attr_native_wind_speed_unit = UnitOfSpeed.KILOMETERS_PER_HOUR
         
         self._attr_unique_id = f"{self.station_id}_weather"
-        
-        # Use extracted name if available
-        station_name = self.coordinator.data.get("name")
-        display_name = station_name if station_name else f"AVAMET Station {self.station_id}"
-        
-        model = getattr(self.coordinator, "metadata", {}).get("model") or "Station"
-        
-        self._attr_device_info = {
-            "identifiers": {(DOMAIN, self.station_id)},
-            "name": display_name,
-            "manufacturer": "AVAMET",
-            "model": model,
-        }
 
     @property
     def condition(self) -> str | None:
