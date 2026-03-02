@@ -21,6 +21,9 @@
         "sensor": {
             "audit_date": {
                 "name": "Audit Date"
+            },
+            "rain_today": {
+                "name": "Rain Today"
             }
         },
         "binary_sensor": {

@@ -21,6 +21,9 @@
         "sensor": {
             "audit_date": {
                 "name": "Data d'Auditoria"
+            },
+            "rain_today": {
+                "name": "Pluja Avui"
             }
         },
         "binary_sensor": {
