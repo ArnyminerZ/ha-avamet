@@ -2,7 +2,7 @@
 import logging
 import re
 from typing import Any, Dict
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 import aiohttp
 from homeassistant.helpers.sun import get_astral_location
@@ -56,10 +56,76 @@ class AvametApiClient:
             async with self.session.get(url, cookies={"idioma": "_va"}) as response:
                 response.raise_for_status()
                 html = await response.text()
-                return self._parse_html(html)
+                data = self._parse_html(html)
+                
+                # Fetch forecast if coordinates are available
+                if data.get("latitude") is not None and data.get("longitude") is not None:
+                    try:
+                        forecast_url = f"https://api.meteopt.com/gfs/json?lat={data['latitude']}&lon={data['longitude']}&lang=es"
+                        async with self.session.get(forecast_url) as forecast_response:
+                            if forecast_response.status == 200:
+                                forecast_json = await forecast_response.json(content_type=None)
+                                data.update(self._parse_forecast(forecast_json))
+                    except Exception as e:
+                        _LOGGER.debug(f"Failed to fetch forecast: {e}")
+
+                return data
         except Exception as err:
             _LOGGER.error("Error fetching data from AVAMET for station %s: %s", self.station_id, err)
             raise
+
+    def _parse_forecast(self, json_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse forecast JSON data."""
+        try:
+            run_str = str(json_data.get("run", ""))
+            if not run_str:
+                return {}
+                
+            run_date = datetime.strptime(run_str, "%Y%m%d%H").replace(tzinfo=timezone.utc)
+            
+            steps = json_data.get("steps", {}).get("values", [])
+            data_block = json_data.get("data", {})
+            
+            tmp2m = data_block.get("tmp2m", {}).get("values", [])
+            apcp = data_block.get("apcp", {}).get("values", [])
+            wind = data_block.get("wind10m", {}).get("values", [])
+            wind_dir = data_block.get("wind10mdir", {}).get("values", [])
+            tcdc = data_block.get("tcdc", {}).get("values", [])
+            
+            forecasts = []
+            for i, step in enumerate(steps):
+                fcst_time = run_date + timedelta(hours=step)
+                
+                cloud = tcdc[i] if i < len(tcdc) else 0
+                rain = apcp[i] if i < len(apcp) else 0
+                
+                # Basic condition estimation
+                condition = "sunny"
+                if rain > 0:
+                    condition = "rainy"
+                elif cloud > 80:
+                    condition = "cloudy"
+                elif cloud > 30:
+                    condition = "partlycloudy"
+                    
+                forecast = {
+                    "datetime": fcst_time.isoformat(),
+                    "native_temperature": tmp2m[i] if i < len(tmp2m) else None,
+                    "native_precipitation": rain,
+                    "native_wind_speed": wind[i] if i < len(wind) else None,
+                    "wind_bearing": wind_dir[i] if i < len(wind_dir) else None,
+                    "condition": condition,
+                    "cloud_coverage": cloud,
+                }
+                forecasts.append(forecast)
+                
+            return {
+                "forecast": forecasts,
+                "forecast_model": json_data.get("model", "Unknown")
+            }
+        except Exception as e:
+            _LOGGER.debug(f"Error parsing forecast data: {e}")
+            return {}
 
     async def async_get_metadata(self) -> Dict[str, Any]:
         """Fetch and parse device metadata from AVAMET."""

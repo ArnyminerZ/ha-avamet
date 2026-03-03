@@ -36,8 +36,28 @@ class AvametWeatherEntity(AvametEntity, WeatherEntity):
     _attr_name = None
 
     @property
+    def supported_features(self) -> int:
+        """Return supported features."""
+        features = 0
+        if self.coordinator.data.get("forecast"):
+            features |= WeatherEntityFeature.FORECAST_HOURLY
+        return features
+
+    @property
     def forecast(self) -> list | None:
         """Return the forecast."""
+        return self.coordinator.data.get("forecast")
+
+    async def async_forecast_hourly(self) -> list | None:
+        """Return the hourly forecast."""
+        return self.coordinator.data.get("forecast")
+
+    @property
+    def attribution(self) -> str | None:
+        """Return the attribution."""
+        model = self.coordinator.data.get("forecast_model")
+        if model:
+            return f"Forecast data from meteopt (Model: {model})"
         return None
 
     def __init__(self, coordinator: AvametDataUpdateCoordinator, entry: ConfigEntry) -> None:
