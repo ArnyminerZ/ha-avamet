@@ -23,7 +23,7 @@ PATTERN_HUMIDITY = re.compile(r"<div id=\"hrel\">.*?<br/>([\d\.]+)<span class='u
 PATTERN_PRESSURE = re.compile(r"<div id=\"pres\">.*?<br/>([\d\.]+)<span class='unit'>hPa</span>", re.DOTALL)
 PATTERN_WIND_SPEED = re.compile(r"<div id=\"vent\">.*风.*?<br/>([\d\.]+)<span class='unit'>km/h</span>", re.DOTALL | re.IGNORECASE)
 PATTERN_WIND_SPEED_ALT = re.compile(r"<div id=\"vent\">.*?<br/>([\d\.]+)<span class='unit'>km/h</span>", re.DOTALL)
-PATTERN_RAIN_HUI = re.compile(r"<div id=\"prec\">[^<]*?hui[^<]*?<br/>([\d,-]+)<span class='unit'>mm</span>", re.DOTALL | re.IGNORECASE)
+PATTERN_RAIN_HUI = re.compile(r"<div id=\"prec\">.*?hui.*?<br/>([\d,-]+)<span class='unit'>mm</span>", re.DOTALL | re.IGNORECASE)
 PATTERN_CAMERA = re.compile(r"<img class=\"webcamD\" src=\"(.*?)\"")
 
 # Metadata extraction patterns
