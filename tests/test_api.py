@@ -94,9 +94,12 @@ class TestParseMetadataHtml:
 @pytest.mark.live
 @pytest.mark.asyncio
 async def test_live_fetch_data():
-    async with aiohttp.ClientSession() as session:
-        client = AvametApiClient(LIVE_STATION, session)
-        data = await client.async_get_data()
+    try:
+        async with aiohttp.ClientSession() as session:
+            client = AvametApiClient(LIVE_STATION, session)
+            data = await client.async_get_data()
+    except aiohttp.ClientError as exc:
+        pytest.skip(f"Network unreachable: {exc}")
 
     assert isinstance(data, dict)
     assert isinstance(data.get("name"), str) and data["name"], "name must be a non-empty string"
@@ -114,9 +117,12 @@ async def test_live_fetch_data():
 @pytest.mark.live
 @pytest.mark.asyncio
 async def test_live_fetch_metadata():
-    async with aiohttp.ClientSession() as session:
-        client = AvametApiClient(LIVE_STATION, session)
-        meta = await client.async_get_metadata()
+    try:
+        async with aiohttp.ClientSession() as session:
+            client = AvametApiClient(LIVE_STATION, session)
+            meta = await client.async_get_metadata()
+    except aiohttp.ClientError as exc:
+        pytest.skip(f"Network unreachable: {exc}")
 
     assert isinstance(meta, dict)
     assert {"model", "audit_date", "check_temp_hum", "check_rain", "check_wind"} <= meta.keys()
