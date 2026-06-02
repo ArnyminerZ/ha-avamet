@@ -1,11 +1,11 @@
 """API Client for fetching weather data from AVAMET."""
 import logging
 import re
-from typing import Any, Dict
+from html.parser import HTMLParser
+from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta, timezone
 
 import aiohttp
-from homeassistant.helpers.sun import get_astral_location
 from astral import LocationInfo
 from astral.sun import sun
 
@@ -15,23 +15,85 @@ BASE_URL = "https://www.avamet.org"
 DATA_URL = f"{BASE_URL}/mxo_i.php?id={{station_id}}"
 METADATA_URL = f"{BASE_URL}/mx-fitxa.php?id={{station_id}}"
 
-# Regex patterns for parsing AVAMET HTML
-PATTERN_NAME = re.compile(r"<div id=\"estacio\"[^>]*>\s*(.*?)\s*<br><span class=\"subnom\">\s*(.*?)\s*</span>", re.DOTALL)
-PATTERN_COORDS = re.compile(r"(\d+)&deg;\s*(\d+)'\s*([\d\.]+)&quot;\s*([NS])\s*,\s*(\d+)&deg;\s*(\d+)'\s*([\d\.]+)&quot;\s*([EW])")
-PATTERN_TEMP = re.compile(r"<div id=\"temp_mit\">([\d,-]+)&deg;</div>")
-PATTERN_HUMIDITY = re.compile(r"<div id=\"hrel\">.*?<br/>([\d\.]+)<span class='unit'>%</span>", re.DOTALL)
-PATTERN_PRESSURE = re.compile(r"<div id=\"pres\">.*?<br/>([\d\.]+)<span class='unit'>hPa</span>", re.DOTALL)
-PATTERN_WIND_SPEED = re.compile(r"<div id=\"vent\">.*风.*?<br/>([\d\.]+)<span class='unit'>km/h</span>", re.DOTALL | re.IGNORECASE)
-PATTERN_WIND_SPEED_ALT = re.compile(r"<div id=\"vent\">.*?<br/>([\d\.]+)<span class='unit'>km/h</span>", re.DOTALL)
-PATTERN_RAIN_HUI = re.compile(r"<div id=\"prec\">.*?hui.*?<br/>([\d,-]+)<span class='unit'>mm</span>", re.DOTALL | re.IGNORECASE)
-PATTERN_CAMERA = re.compile(r"<img class=\"webcamD\" src=\"(.*?)\"")
+# Applied only to the already-extracted coordinate string, not the full HTML
+PATTERN_COORDS = re.compile(
+    r'(\d+)°\s*(\d+)\'\s*([\d.]+)"\s*([NS]),\s*(\d+)°\s*(\d+)\'\s*([\d.]+)"\s*([EW])'
+)
 
-# Metadata extraction patterns
+# Metadata extraction patterns (applied to the metadata page, not the data page)
 PATTERN_MODEL = re.compile(r"<td class=\"fitxaVar\">Model(?:o?)</td><td class=\"fitxaValN\">(.*?)<img", re.DOTALL | re.IGNORECASE)
 PATTERN_AUDIT_DATE = re.compile(r"<td class=\"fitxaVar\">Revisi(?:.*?) de (?:dades|datos)</td><td class=\"fitxaVal\">(.*?)</td>", re.DOTALL | re.IGNORECASE)
 PATTERN_SEGELL_TH = re.compile(r"<td class=\"fitxaVar\">(?:Segell|Sello) TERMO HIGROM.*?TRIC(?:O?)</td><td class=\"fitxaVal\"(?:.*?)><img src=\"(.*?)\"", re.DOTALL | re.IGNORECASE)
 PATTERN_SEGELL_PL = re.compile(r"<td class=\"fitxaVar\">(?:Segell|Sello) PLUVIOM.*?TRIC(?:O?)</td><td class=\"fitxaVal\"(?:.*?)><img src=\"(.*?)\"", re.DOTALL | re.IGNORECASE)
 PATTERN_SEGELL_WIND = re.compile(r"<td class=\"fitxaVar\">(?:Segell|Sello) E.*?LIC(?:O?)</td><td class=\"fitxaVal\"(?:.*?)><img src=\"(.*?)\"", re.DOTALL | re.IGNORECASE)
+
+
+class _ElementParser(HTMLParser):
+    """Collect elements by ID from potentially malformed HTML.
+
+    Segments within each element are split on <br> tags, mirroring the site's
+    label / value layout (e.g. <span class="dess">Label</span><br/>VALUE<span class="unit">UNIT</span>).
+    Elements with the same ID (duplicate IDs) are stored in document order so
+    callers can pick the first, second, etc. occurrence.
+    """
+
+    _VOID = frozenset(['br', 'hr', 'img', 'input', 'link', 'meta',
+                       'area', 'base', 'col', 'embed', 'param', 'source', 'track', 'wbr'])
+
+    def __init__(self, target_ids: List[str]) -> None:
+        super().__init__(convert_charrefs=True)
+        self._targets = frozenset(target_ids)
+        # All collected elements in document order.
+        # Each entry: {'id': str, 'segments': [[str, ...], ...], 'images': [{attr: val}]}
+        self.elements: List[Dict] = []
+        self._current: Optional[Dict] = None
+        self._depth: int = 0
+
+    def handle_starttag(self, tag: str, attrs) -> None:
+        attrs_dict = dict(attrs)
+        if self._current is not None:
+            if tag == 'br':
+                self._current['segments'].append([])
+            if tag == 'img':
+                self._current['images'].append(attrs_dict)
+            if tag not in self._VOID:
+                self._depth += 1
+        elif attrs_dict.get('id') in self._targets:
+            self._current = {'id': attrs_dict['id'], 'segments': [[]], 'images': []}
+            self._depth = 0
+
+    def handle_endtag(self, tag: str) -> None:
+        if self._current is None or tag in self._VOID:
+            return
+        if self._depth == 0:
+            self.elements.append(self._current)
+            self._current = None
+        else:
+            self._depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if self._current is not None:
+            stripped = data.strip()
+            if stripped:
+                self._current['segments'][-1].append(stripped)
+
+
+def _seg(element: Dict, seg: int, idx: int = 0) -> Optional[str]:
+    """Return one text item from a parsed element's segment list."""
+    try:
+        return element['segments'][seg][idx]
+    except (IndexError, TypeError):
+        return None
+
+
+def _parse_eur_float(s: Optional[str]) -> Optional[float]:
+    """Convert a European-format number string (. thousands, , decimal) to float."""
+    if s is None:
+        return None
+    try:
+        return float(s.replace('.', '').replace(',', '.'))
+    except ValueError:
+        return None
 
 def dms_to_decimal(degrees: int, minutes: int, seconds: float, direction: str) -> float:
     """Convert DMS to Decimal Degrees format."""
@@ -188,117 +250,99 @@ class AvametApiClient:
             "camera_url": None,
         }
 
-        # Match name
-        match_name = PATTERN_NAME.search(html)
-        if match_name:
-            # We want to replace HTML escape character &agrave; -> à, etc. if required,
-            # but HA might handle this or we can clean it minimally. Right now
-            # let's just extract the raw text and replace typical newlines/spaces
-            main_name = match_name.group(1).strip()
-            sub_name = match_name.group(2).strip()
-            data["name"] = f"{main_name} - {sub_name}"
+        parser = _ElementParser(['estacio', 'temp_mit', 'hrel', 'pres', 'vent', 'prec', 'webcam'])
+        parser.feed(html)
 
-        # Match temperature
-        match_temp = PATTERN_TEMP.search(html)
-        if match_temp:
-            val = match_temp.group(1).replace(",", ".")
+        def first(eid: str) -> Optional[Dict]:
+            return next((el for el in parser.elements if el['id'] == eid), None)
+
+        def all_by_id(eid: str) -> List[Dict]:
+            return [el for el in parser.elements if el['id'] == eid]
+
+        # Station name and coordinates
+        estacio = first('estacio')
+        if estacio:
+            main_name = ''.join(estacio['segments'][0]).strip() if estacio['segments'] else ''
+            sub_name = ''.join(estacio['segments'][1]).strip() if len(estacio['segments']) > 1 else ''
+            data['name'] = f"{main_name} - {sub_name}" if sub_name else main_name
+
+            coord_str = ''.join(estacio['segments'][2]).strip() if len(estacio['segments']) > 2 else ''
+            match_coords = PATTERN_COORDS.search(coord_str)
+            if match_coords:
+                try:
+                    lat_decimal = dms_to_decimal(
+                        int(match_coords.group(1)), int(match_coords.group(2)),
+                        float(match_coords.group(3)), match_coords.group(4),
+                    )
+                    lon_decimal = dms_to_decimal(
+                        int(match_coords.group(5)), int(match_coords.group(6)),
+                        float(match_coords.group(7)), match_coords.group(8),
+                    )
+                    data['latitude'] = lat_decimal
+                    data['longitude'] = lon_decimal
+                except Exception as e:
+                    _LOGGER.debug("Failed to parse coordinates: %s", e)
+
+        # Temperature: <div id="temp_mit">14,8°</div>
+        temp_elem = first('temp_mit')
+        if temp_elem:
+            val = _parse_eur_float((_seg(temp_elem, 0) or '').rstrip('°') or None)
+            if val is not None:
+                data['temperature'] = val
+
+        # Humidity: label in seg[0], value in seg[1][0]
+        hrel_elem = first('hrel')
+        if hrel_elem:
+            val = _parse_eur_float(_seg(hrel_elem, 1))
+            if val is not None:
+                data['humidity'] = val
+
+        # Pressure: label in seg[0], value in seg[1][0] (European thousands separator)
+        pres_elem = first('pres')
+        if pres_elem:
+            val = _parse_eur_float(_seg(pres_elem, 1))
+            if val is not None:
+                data['pressure'] = val
+
+        # Wind speed: first <div id="vent"> is current wind; second is max wind
+        vent_elems = all_by_id('vent')
+        if vent_elems:
+            val = _parse_eur_float(_seg(vent_elems[0], 1))
+            if val is not None:
+                data['wind_speed'] = val
+
+        # Rain today: first <div id="prec"> is today; second is monthly; third is annual
+        prec_elems = all_by_id('prec')
+        if prec_elems:
+            val = _parse_eur_float(_seg(prec_elems[0], 1))
+            if val is not None:
+                data['rain_today'] = val
+
+        # Camera URL: first webcamD image inside <div id="webcam">
+        webcam_elem = first('webcam')
+        if webcam_elem:
+            for img in webcam_elem['images']:
+                if 'webcamD' in img.get('class', '').split():
+                    src = img.get('src', '')
+                    if src:
+                        data['camera_url'] = src if src.startswith('http') else f"{BASE_URL}/{src}"
+                    break
+
+        # Determine day/night condition using Astral
+        if data['latitude'] is not None and data['longitude'] is not None:
             try:
-                data["temperature"] = float(val)
-            except ValueError:
-                pass
-
-        # Match humidity
-        match_hum = PATTERN_HUMIDITY.search(html)
-        if match_hum:
-            val = match_hum.group(1)
-            try:
-                data["humidity"] = float(val)
-            except ValueError:
-                pass
-
-        # Match pressure
-        match_pres = PATTERN_PRESSURE.search(html)
-        if match_pres:
-            # Pressure format might have thousand separators like 1.026
-            val = match_pres.group(1).replace(".", "") 
-            try:
-                data["pressure"] = float(val)
-            except ValueError:
-                pass
-
-        # Match wind speed
-        match_wind = PATTERN_WIND_SPEED_ALT.search(html)
-        if match_wind:
-            val = match_wind.group(1).replace(",", ".")
-            try:
-                data["wind_speed"] = float(val)
-            except ValueError:
-                pass
-
-        # Match camera URL
-        match_cam = PATTERN_CAMERA.search(html)
-        if match_cam:
-            cam_url = match_cam.group(1)
-            if cam_url.startswith("http"):
-                data["camera_url"] = cam_url
-            else:
-                data["camera_url"] = f"{BASE_URL}/{cam_url}"
-
-        # Match rain today (pluja hui)
-        match_rain = PATTERN_RAIN_HUI.search(html)
-        if match_rain:
-            val = match_rain.group(1).replace(",", ".")
-            try:
-                data["rain_today"] = float(val)
-            except ValueError:
-                pass
-
-        # Quick HTML entity unescaping for the name so it looks natural
-        if data["name"]:
-            import html as html_parser
-            data["name"] = html_parser.unescape(data["name"])
-
-        # Determine conditions via Coordinates and Astral
-        match_coords = PATTERN_COORDS.search(html)
-        if match_coords:
-            try:
-                lat_d = int(match_coords.group(1))
-                lat_m = int(match_coords.group(2))
-                lat_s = float(match_coords.group(3))
-                lat_dir = match_coords.group(4)
-                
-                lon_d = int(match_coords.group(5))
-                lon_m = int(match_coords.group(6))
-                lon_s = float(match_coords.group(7))
-                lon_dir = match_coords.group(8)
-                
-                lat_decimal = dms_to_decimal(lat_d, lat_m, lat_s, lat_dir)
-                lon_decimal = dms_to_decimal(lon_d, lon_m, lon_s, lon_dir)
-                
-                data["latitude"] = lat_decimal
-                data["longitude"] = lon_decimal
-                
-                # Check day/night using Astral
-                from astral import LocationInfo
-                from astral.sun import sun
-                from datetime import datetime, timezone
-                import pytz # Standard dependency used by astral if necessary, or simple UTC comparison
-
-                loc = LocationInfo(timezone="UTC", latitude=lat_decimal, longitude=lon_decimal)
+                loc = LocationInfo(timezone="UTC", latitude=data['latitude'], longitude=data['longitude'])
                 s = sun(loc.observer, date=datetime.now())
-                
                 now = datetime.now(timezone.utc)
-                is_day = s["sunrise"] < now < s["sunset"]
-
-                # Extremely basic heuristical estimation
-                rain = data.get("rain_today", 0) or 0
+                is_day = s['sunrise'] < now < s['sunset']
+                rain = data.get('rain_today', 0) or 0
                 if rain > 0:
-                    data["condition"] = "rainy"
+                    data['condition'] = 'rainy'
                 elif not is_day:
-                    data["condition"] = "clear-night"
+                    data['condition'] = 'clear-night'
                 else:
-                    data["condition"] = "sunny"
+                    data['condition'] = 'sunny'
             except Exception as e:
-                _LOGGER.debug(f"Failed to extrapolate conditions: {e}")
+                _LOGGER.debug("Failed to extrapolate conditions: %s", e)
 
         return data
