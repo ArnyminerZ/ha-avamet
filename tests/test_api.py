@@ -92,6 +92,7 @@ class TestParseMetadataHtml:
 
 
 @pytest.mark.live
+@pytest.mark.asyncio
 async def test_live_fetch_data():
     async with aiohttp.ClientSession() as session:
         client = AvametApiClient(LIVE_STATION, session)
@@ -111,6 +112,7 @@ async def test_live_fetch_data():
 
 
 @pytest.mark.live
+@pytest.mark.asyncio
 async def test_live_fetch_metadata():
     async with aiohttp.ClientSession() as session:
         client = AvametApiClient(LIVE_STATION, session)
