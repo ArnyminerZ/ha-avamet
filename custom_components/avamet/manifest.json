@@ -1,6 +1,7 @@
 {
   "domain": "avamet",
   "name": "AVAMET",
+  "categories": ["weather_alerts"],
   "codeowners": [],
   "config_flow": true,
   "dependencies": [],
