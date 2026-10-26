@@ -8,8 +8,6 @@
   "integration_type": "device",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/ArnyminerZ/ha-avamet/issues",
-  "requirements": [
-    "aiohttp"
-  ],
+  "requirements": [],
   "version": "1.0.8"
 }
