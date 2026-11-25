@@ -2,6 +2,14 @@
 
 This custom component for Home Assistant integrates real-time weather data and camera images from [AVAMET](https://www.avamet.org) (Associació Valenciana de Meteorologia).
 
+[![Open Marketplace Repository on My HA][marketplace-badge]][marketplace-link]
+[![Add Integration to My HA][integration-badge]][integration-link]
+
+[marketplace-badge]: https://my.home-assistant.io/badges/marketplace_repository.svg
+[marketplace-link]: https://my.home-assistant.io/redirect/marketplace_repository/?owner=ArnyminerZ&repository=ha-avamet&category=integration
+[integration-badge]: https://my.home-assistant.io/badges/config_flow_start.svg
+[integration-link]: https://my.home-assistant.io/redirect/config_flow_start/?domain=avamet
+
 ## Features
 
 - **Weather Entity**: Provides temperature, humidity, pressure, and wind speed from the station.
@@ -9,17 +17,18 @@ This custom component for Home Assistant integrates real-time weather data and c
 
 ## Installation
 
-### HACS (Recommended)
+### Marketplace (Recommended)
 
-This integration is completely compatible with [HACS](https://hacs.xyz/).
+Starting with Home Assistant **2026.11**, HACS is called the **Marketplace**. This integration is available through it.
 
-1. Open HACS in your Home Assistant instance.
+1. Click the **Open Marketplace Repository on My HA** badge above, or open the Marketplace in your Home Assistant instance.
 2. Click on the 3 dots in the top right corner and select **Custom repositories**.
 3. Add this repository's URL with the category "Integration".
 4. Click "Download" to install the integration.
 5. Restart your Home Assistant.
-6. Navigate to **Settings > Devices & Services > Add Integration**.
-7. Search for "AVAMET" and set it up.
+6. Click the **Add Integration to My HA** badge above, or navigate to **Settings > Devices & Services > Add Integration**, search for "AVAMET" and set it up.
+
+> **Home Assistant earlier than 2026.11:** the Marketplace was previously named [HACS](https://hacs.xyz/). The steps are the same; just open HACS instead of the Marketplace (the repository badge above links to the HACS repository page via My Home Assistant on those versions).
 
 ### Manual
 
